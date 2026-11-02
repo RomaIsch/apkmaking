@@ -13,20 +13,20 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libffi-dev wget
+          sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libffi-dev wget unzip
       - name: Install Buildozer and Build Tools
         run: |
           pip install --upgrade pip setuptools wheel
           pip install buildozer "cython==0.29.35"
       - name: Setup Android SDK and Install Tools
         run: |
-          export ANDROID_HOME=\$HOME/android-sdk
+          export ANDROID_HOME=\$PWD/android-sdk
           mkdir -p \$ANDROID_HOME/cmdline-tools
           cd \$ANDROID_HOME/cmdline-tools
           wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
           unzip cmdline-tools.zip
           mv cmdline-tools latest
-          cd \$HOME
+          cd \$PWD
           export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
           yes | sdkmanager --licenses || true
           sdkmanager "build-tools;30.0.3" "platforms;android-31" "ndk;25b"
