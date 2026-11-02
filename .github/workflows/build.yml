@@ -1,43 +1,50 @@
-name: Build APK
-on: [push, workflow_dispatch]
+# Source - https://stackoverflow.com/a/68359091
+# Posted by Big-Omelette, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-11-02, License - CC BY-SA 4.0
+
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 1,15 * *'
+
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v2
+
+      # used to cache dependencies with a timeout
+      - name: Get Date
+        id: get-date
+        run: |
+          echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
+        shell: bash
+
+      - name: Cache Buildozer global directory
+        uses: actions/cache@v2
         with:
-          python-version: '3.11'
-      - name: Install System Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libffi-dev wget unzip
-      - name: Install Buildozer and Build Tools
-        run: |
-          pip install --upgrade pip setuptools wheel
-          pip install buildozer "cython==0.29.35"
-      - name: Setup Android SDK and Install Tools
-        run: |
-          export ANDROID_HOME=\$PWD/android-sdk
-          mkdir -p \$ANDROID_HOME/cmdline-tools
-          cd \$ANDROID_HOME/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
-          unzip cmdline-tools.zip
-          mv cmdline-tools latest
-          cd \$PWD
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
-          if [ ! -f "\$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
-            echo "sdkmanager not found"
-            exit 1
-          fi
-          yes | sdkmanager --licenses || true
-          sdkmanager "build-tools;30.0.3" "platforms;android-31" "ndk;25b"
-      - name: Compile APK with Buildozer
-        run: buildozer -v android debug
-      - name: Upload Finished APK
-        uses: actions/upload-artifact@v4
+          path: .buildozer_global
+          key: buildozer-global-${{ hashFiles('buildozer.spec') }} # Replace with your path
+
+      - uses: actions/cache@v2
         with:
-          name: android-apk
-          path: bin/*.apk
+          path: .buildozer
+          key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
+
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          command: buildozer android debug
+          buildozer_version: master
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: package
+          path: ${{ steps.buildozer.outputs.filename }}
