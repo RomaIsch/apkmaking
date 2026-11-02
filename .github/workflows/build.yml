@@ -21,12 +21,17 @@ jobs:
       - name: Setup Android SDK and Install Tools
         run: |
           export ANDROID_HOME=\$PWD/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
           mkdir -p \$ANDROID_HOME/cmdline-tools
           cd \$ANDROID_HOME/cmdline-tools
           wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
           unzip cmdline-tools.zip
           mv cmdline-tools latest
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
+          cd \$PWD
+          if ! command -v sdkmanager &> /dev/null; then
+            echo "sdkmanager not found in PATH"
+            exit 1
+          fi
           yes | sdkmanager --licenses || true
           sdkmanager "build-tools;30.0.3" "platforms;android-31" "ndk;25b"
       - name: Compile APK with Buildozer
