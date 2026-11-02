@@ -1,16 +1,48 @@
 [app]
-title = My Application
-package.name = myapp
+
+# (str) Название приложения
+title = My KivyMD App
+
+# (str) Имя пакета (без пробелов, только латиница)
+package.name = mykivymdapp
+
+# (str) Домен пакета
 package.domain = org.test
+
+# (str) Список файлов исходного кода (через запятую)
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas
+source.exts = py,png,jpg,kv,atlas
+
+# (list) Зависимости приложения. 
+# Обязательно указываем python3, kivy и kivymd
+requirements = python3,kivy,kivymd
+
+# (str) Главный файл приложения
 version = 0.1
-requirements = python3,kivy==2.3.0,kivymd==1.2.0
-orientation = portrait
-fullscreen = 0
-android.archs = arm64-v8a
+
+# (list) Разрешения (Permissions)
+android.permissions = INTERNET
+
+# (int) Целевой уровень API Android
 android.api = 31
+
+# (int) Минимальный поддерживаемый API Android
 android.minapi = 21
-android.ndk_version = 25b
+
+# (str) Ориентация экрана (all, portrait, landscape)
+orientation = portrait
+
+# (bool) Полноэкранный режим (1 - да, 0 - нет)
+fullscreen = 0
+
+# (str) Поддерживаемые архитектуры процессоров
+android.archs = arm64-v8a, armeabi-v7a
+
+
+[buildozer]
+
+# (int) Уровень логирования (0 = error, 1 = info, 2 = debug (с выводом кэша), 4 = trace)
 log_level = 2
-warn_on_root = 1
+
+# (int) Показывать предупреждения
+warn_on = 0
